@@ -1,0 +1,67 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: kisanq
+      POSTGRES_PASSWORD: kisanq
+      POSTGRES_DB: kisanq
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kisanq"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql://kisanq:kisanq@postgres:5432/kisanq
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: change-me-in-production
+      NOTIFY_CHANNEL: kisanq.notifications
+      CORS_ORIGINS: http://localhost:5173,http://localhost:80
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  notify:
+    build: ./notification-service
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      NOTIFY_CHANNEL: kisanq.notifications
+      SMPP_HOST: ${SMPP_HOST:-}
+      SMPP_PORT: ${SMPP_PORT:-2775}
+      SMPP_SYSTEM_ID: ${SMPP_SYSTEM_ID:-}
+      SMPP_PASSWORD: ${SMPP_PASSWORD:-}
+      WHATSAPP_TOKEN: ${WHATSAPP_TOKEN:-}
+      WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID:-}
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  web:
+    build: ./frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:

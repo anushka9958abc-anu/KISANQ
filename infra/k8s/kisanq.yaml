@@ -1,0 +1,126 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kisanq-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: kisanq-api
+  template:
+    metadata:
+      labels:
+        app: kisanq-api
+    spec:
+      containers:
+        - name: api
+          image: kisanq-api:1.0.0
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: kisanq-secrets
+                  key: database_url
+            - name: REDIS_URL
+              value: redis://kisanq-redis:6379/0
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: kisanq-secrets
+                  key: jwt_secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kisanq-api
+spec:
+  selector:
+    app: kisanq-api
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kisanq-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: kisanq-web
+  template:
+    metadata:
+      labels:
+        app: kisanq-web
+    spec:
+      containers:
+        - name: web
+          image: kisanq-web:1.0.0
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kisanq-web
+spec:
+  type: LoadBalancer
+  selector:
+    app: kisanq-web
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kisanq-redis
+spec:
+  selector:
+    app: kisanq-redis
+  ports:
+    - port: 6379
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kisanq-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kisanq-redis
+  template:
+    metadata:
+      labels:
+        app: kisanq-redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kisanq-notify
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kisanq-notify
+  template:
+    metadata:
+      labels:
+        app: kisanq-notify
+    spec:
+      containers:
+        - name: notify
+          image: kisanq-notify:1.0.0
+          env:
+            - name: REDIS_URL
+              value: redis://kisanq-redis:6379/0

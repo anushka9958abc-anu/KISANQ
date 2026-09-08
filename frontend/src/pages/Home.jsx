@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Logo } from "./ui";
+import { Logo } from "../components/Logo";
 
 const features = [
   {
@@ -25,7 +25,7 @@ export default function Home() {
     <div>
       <header className="field-band text-cream">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5">
-          <Logo light />
+        <Logo light /> 
           <div className="flex gap-2">
             <Link to="/login" className="rounded-full border border-cream/30 px-4 py-2 text-sm">
               Sign in
@@ -92,3 +92,4 @@ export default function Home() {
     </div>
   );
 }
+

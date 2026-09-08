@@ -1,8 +1,8 @@
 from datetime import date, datetime, timedelta
 from uuid import uuid4
-
+import time
 from sqlalchemy import text
-
+from sqlalchemy.exc import OperationalError
 from app.auth import hash_password
 from app.config import settings
 from app.database import Base, SessionLocal, engine
@@ -48,7 +48,17 @@ def seed():
             db.commit()
     except Exception:
         db.rollback()
-    Base.metadata.create_all(bind=engine)
+    max_retries = 10
+    for i in range(max_retries):
+        try:
+            Base.metadata.create_all(bind=engine)
+            print("Database connected successfully.")
+            break
+        except OperationalError:
+            if i == max_retries - 1:
+                raise
+            print("Database not ready yet, retrying in 2 seconds...")
+            time.sleep(2)
 
     if db.query(User).first():
         db.close()
@@ -197,7 +207,7 @@ def seed():
             farmer_id=farmer.id,
             centre_id=kkr.id,
             crop_id=paddy.id,
-            slot_id=kkr_slots[4],
+            slot_id=kkr_slots[4].id,
             quantity_quintals=28,
             estimated_minutes=int(round(10 + 28 * 0.7)),
             status=ProcurementStatus.slot_assigned,

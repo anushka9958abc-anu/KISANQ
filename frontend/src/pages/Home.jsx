@@ -86,7 +86,7 @@ export default function Home() {
           ))}
         </div>
         <p className="mt-10 text-sm text-moss">
-          Demo farmer: 9876543210 / farmer123 · Admin: 9990001111 / admin123
+          
         </p>
       </section>
     </div>

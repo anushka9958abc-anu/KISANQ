@@ -12,10 +12,10 @@ export default function Login() {
   const [mode, setMode] = useState("login");
   const [form, setForm] = useState({
     name: "",
-    phone: officer ? "9990001111" : "9876543210",
-    password: officer ? "admin123" : "farmer123",
-    village: "Kunjpura",
-    district: "Karnal",
+    phone: "",
+    password: "",
+    village: "",
+    district: "",
   });
   const [error, setError] = useState("");
 

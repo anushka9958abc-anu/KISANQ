@@ -11,8 +11,6 @@ docker compose up --build
 - App: http://localhost:5173
 - API: http://localhost:8000/docs
 
-Demo farmer: `9876543210` / `farmer123`  
-Demo admin: `9990001111` / `admin123`
 
 ## Stack
 
